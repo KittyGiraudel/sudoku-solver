@@ -4,61 +4,45 @@ const Cell = require('./Cell')
 const getSize = require('../helpers/getSize')
 const parseInitialValues = require('../helpers/parseInitialValues')
 const range = require('../helpers/range')
-const renderLine = require('../helpers/renderLine')
+const render = require('../helpers/render')
 const validate = require('../helpers/validate')
-const { COLORS, SYMBOLS, BOXES } = require('./constants')
+const { COLORS, SYMBOLS } = require('./constants')
 
 class Game {
+  #size
+  #grid
+  #initialValues
+  #options = {}
+
   constructor(initialValues, options = {}) {
-    this.options = {
-      verbose: typeof process.env.DEBUG !== 'undefined',
-      colors: 'colors' in options ? Boolean(options.colors) : false,
-    }
-    this.initialValues = parseInitialValues(initialValues)
-    this.size = getSize(this.initialValues)
-    this.grid = range(this.size, row =>
-      range(
-        this.size,
-        col =>
-          new Cell(row, col, this.size, this.initialValues.get(row + ':' + col))
-      )
+    const values = parseInitialValues(initialValues)
+    const size = getSize(values)
+
+    this.#options.verbose = typeof process.env.DEBUG !== 'undefined'
+    this.#options.colors = 'colors' in options ? Boolean(options.colors) : false
+    this.#initialValues = values
+    this.#size = size
+    this.#grid = range(size, row =>
+      range(size, col => new Cell(row, col, size, values.get(row + ':' + col)))
     )
   }
 
-  logger(row, col) {
-    return this.options.verbose ? debug(`${row}:${col}`) : () => {}
-  }
-
-  renderValue(row, col) {
-    const value = this.get(row, col).toString() || ' '
-
-    if (!this.options.colors) return value
-
-    const color = chalk[COLORS[value - 1] || 'white']
-    const fn = this.initialValues.has(row + ':' + col) ? color.underline : color
-
-    return fn(value)
-  }
-
-  dim(value) {
-    return this.options.color ? chalk.dim(value) : value
-  }
-
   get(row, col) {
-    return this.grid[row][col]
+    return this.#grid[row][col]
   }
 
-  checkCell(row, col) {
-    const log = this.logger(row, col)
+  #checkCell(row, col) {
+    const size = this.#size
+    const log = this.#options.verbose ? debug(`${row}:${col}`) : () => {}
 
     // If the current row index or colum index is out of bound, it means we have
     // reach the bottom right of the grid, and therefore we have fully resolved.
-    if (row >= this.size || col >= this.size) return true
+    if (row >= size || col >= size) return true
 
     log('starting')
 
-    const nextCol = (col + 1) % this.size
-    const nextRow = Math.floor((this.size * row + col + 1) / this.size)
+    const nextCol = (col + 1) % size
+    const nextRow = Math.floor((size * row + col + 1) / size)
     const cell = this.get(row, col)
     const value = cell.toString()
 
@@ -66,14 +50,13 @@ class Game {
     // next one as it means it was a predefined value which cannot be incorrect.
     if (value) {
       log('predefined', value)
-      return this.checkCell(nextRow, nextCol)
+      return this.#checkCell(nextRow, nextCol)
     }
 
     // Retrieve all the values in the row, column and square of the current cell
     // to know which ones *cannot* be set in the current cell.
     const impossibleValues = new Set(
-      cell
-        .getNeighbours()
+      cell.neighbours
         .map(coords => this.get(...coords).toString())
         .filter(Boolean)
     )
@@ -84,13 +67,13 @@ class Game {
     // Note that this code branch is not technically necessary and is there only
     // to avoid entering the next loop if it is known in advance that no values
     // can possibly fit.
-    if (impossibleValues.size === this.size) {
+    if (impossibleValues.size === size) {
       log('dead end')
       return false
     }
 
     // Otherwise, go through all the values and for each one…
-    for (let i = 0; i < this.size; i++) {
+    for (let i = 0; i < size; i++) {
       const symbol = SYMBOLS[i]
 
       // If the value cannot be set because it is already in the row, column or
@@ -104,7 +87,7 @@ class Game {
       // Proceed to the next cell. If it eventually returns `true`, that means
       // this cell is correct, and it should return `true` as well to bubble the
       // result up.
-      if (this.checkCell(nextRow, nextCol)) {
+      if (this.#checkCell(nextRow, nextCol)) {
         log(`confirming ${symbol}`)
         return true
       }
@@ -120,12 +103,12 @@ class Game {
   }
 
   solve() {
-    this.checkCell(0, 0)
+    this.#checkCell(0, 0)
     return this
   }
 
   validate() {
-    validate(this.grid)
+    validate(this.#grid)
     return this
   }
 
@@ -135,25 +118,21 @@ class Game {
   }
 
   toString() {
-    const dim = this.dim.bind(this)
-    const squareSize = Math.sqrt(this.size)
-    const thicks = this.grid[0].map(_ => this.dim(`━━━`))
-    const thins = this.grid[0].map(_ => this.dim(`───`))
-    const top = renderLine(thicks, BOXES.TOP.map(dim))
-    const bottom = renderLine(thicks, BOXES.BOTTOM.map(dim))
-    const thickLine = renderLine(thicks, BOXES.THICK_SEPARATOR.map(dim))
-    const thinLine = renderLine(thins, BOXES.SEPARATOR.map(dim))
+    return render(
+      this.#grid,
+      (row, col) => {
+        const value = this.get(row, col).toString() || ' '
 
-    const renderRow = (row, i) => {
-      const cells = row.map((_, col) => ` ${this.renderValue(i, col)} `)
-      const padding = i > 0 ? (i % squareSize ? thinLine : thickLine) : ''
+        if (!this.#options.colors) return value
 
-      return [padding, renderLine(cells, BOXES.MIDDLE.map(dim))]
-        .filter(Boolean)
-        .join('\n')
-    }
+        const isInitial = this.#initialValues.has(row + ':' + col)
+        const color = chalk[COLORS[value - 1] || 'white']
+        const render = isInitial ? color.underline : color
 
-    return [top, ...this.grid.map(renderRow), bottom].join('\n')
+        return render(value)
+      },
+      this.#options.colors
+    )
   }
 }
 

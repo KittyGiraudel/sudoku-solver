@@ -124,7 +124,7 @@ new Game(
     ['15:10', 'E'],
     ['15:13', '9'],
   ]),
-  { colors: true }
+  { colors: false }
 )
   .solve()
   .render()

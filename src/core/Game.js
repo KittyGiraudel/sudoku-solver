@@ -30,7 +30,7 @@ class Game {
     return this.options.verbose ? debug(`${row}:${col}`) : () => {}
   }
 
-  colorise(row, col) {
+  renderValue(row, col) {
     const value = this.get(row, col).valueOf() || ' '
 
     if (!this.options.colors) return value
@@ -61,7 +61,7 @@ class Game {
     const thinLine = renderLine(thins, BOXES.SEPARATOR.map(dim))
 
     const renderRow = (row, i) => {
-      const cells = row.map((_, col) => ` ${this.colorise(i, col)} `)
+      const cells = row.map((_, col) => ` ${this.renderValue(i, col)} `)
       const padding = i > 0 ? (i % squareSize ? thinLine : thickLine) : ''
 
       return [padding, renderLine(cells, BOXES.MIDDLE.map(dim))]

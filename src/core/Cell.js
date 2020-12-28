@@ -1,5 +1,5 @@
-const getSquareBoundaries = require('./getSquareBoundaries')
-const range = require('./range')
+const getSquareBoundaries = require('../helpers/getSquareBoundaries')
+const range = require('../helpers/range')
 
 class Cell {
   constructor(row, col, gridSize, value) {

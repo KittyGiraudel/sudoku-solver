@@ -1,9 +1,9 @@
 const debug = require('debug')
 const chalk = require('chalk')
 const Cell = require('./Cell')
-const chunkify = require('./chunkify')
-const range = require('./range')
-const getSquareBoundaries = require('./getSquareBoundaries')
+const chunkify = require('../helpers/chunkify')
+const range = require('../helpers/range')
+const getSquareBoundaries = require('../helpers/getSquareBoundaries')
 const { COLORS, SYMBOLS, BOXES } = require('./constants')
 
 class Game {

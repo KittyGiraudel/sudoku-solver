@@ -13,7 +13,12 @@ class Game {
       colors: 'colors' in options ? Boolean(options.colors) : false,
     }
     this.size = size
-    this.initialValues = initialValues
+    this.initialValues =
+      typeof initialValues === 'string'
+        ? initialValues
+            .split(';')
+            .reduce((acc, chunk) => acc.set(...chunk.split('=')), new Map())
+        : initialValues
     this.grid = range(size, row =>
       range(
         size,

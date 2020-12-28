@@ -1,15 +1,19 @@
-const chunkify = require('./chunkify')
+const divide = require('./divide')
+const range = require('./range')
 const cache = new Map()
 
-const getSquareBoundaries = size => {
-  if (cache.has(size)) return cache.get(size)
+// Get an array of array of indices matching squares.
+// @param {Number} length - Grid size
+// @return {Number[][]}
+const getSquareBoundaries = gridSize => {
+  if (cache.has(gridSize)) return cache.get(gridSize)
 
-  const boundaries = chunkify(
-    Array.from({ length: size }, (_, i) => i),
-    Math.sqrt(size)
+  const boundaries = divide(
+    range(gridSize, i => i),
+    Math.sqrt(gridSize)
   )
 
-  cache.set(size, boundaries)
+  cache.set(gridSize, boundaries)
 
   return boundaries
 }

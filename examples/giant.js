@@ -1,7 +1,6 @@
 const Game = require('../src/core/Game')
 
 new Game(
-  16,
   new Map([
     ['0,1', 'E'],
     ['0,3', 'G'],

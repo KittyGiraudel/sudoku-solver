@@ -9,9 +9,8 @@ This repository contains the code of my (very unoptimised) Sudoku solver.
 // where the key is `row,col` and the value is expressed as a string or number.
 // E.g.: new Map([ ['0,2', 5], … ])
 const initialValues = '0:2=5;0:3=3;…;8:4=8'
-const size = 9
 const options = { colors: true }
-const game = new Game(size, initialValues, options)
+const game = new Game(initialValues, options)
 
 game.solve().render().validate()
 ```

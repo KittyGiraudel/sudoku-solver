@@ -1,28 +1,26 @@
 const debug = require('debug')
 const chalk = require('chalk')
 const Cell = require('./Cell')
-const chunkify = require('../helpers/chunkify')
-const range = require('../helpers/range')
+const divide = require('../helpers/divide')
+const getSize = require('../helpers/getSize')
 const getSquareBoundaries = require('../helpers/getSquareBoundaries')
+const parseInitialValues = require('../helpers/parseInitialValues')
+const range = require('../helpers/range')
 const { COLORS, SYMBOLS, BOXES } = require('./constants')
 
 class Game {
-  constructor(size, initialValues, options = {}) {
+  constructor(initialValues, options = {}) {
     this.options = {
       verbose: typeof process.env.DEBUG !== 'undefined',
       colors: 'colors' in options ? Boolean(options.colors) : false,
     }
-    this.size = size
-    this.initialValues =
-      typeof initialValues === 'string'
-        ? initialValues
-            .split(';')
-            .reduce((acc, chunk) => acc.set(...chunk.split('=')), new Map())
-        : initialValues
-    this.grid = range(size, row =>
+    this.initialValues = parseInitialValues(initialValues)
+    this.size = getSize(this.initialValues)
+    this.grid = range(this.size, row =>
       range(
-        size,
-        col => new Cell(row, col, size, this.initialValues.get(row + ':' + col))
+        this.size,
+        col =>
+          new Cell(row, col, this.size, this.initialValues.get(row + ':' + col))
       )
     )
   }
@@ -46,7 +44,7 @@ class Game {
 
   renderLine = (cells, ...symbols) => {
     const [thin, thick, left, right] = symbols.map(symbol => chalk.dim(symbol))
-    const chunks = chunkify(cells, Math.sqrt(cells.length))
+    const chunks = divide(cells, Math.sqrt(cells.length))
 
     return left + chunks.map(cells => cells.join(thin)).join(thick) + right
   }

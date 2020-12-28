@@ -18,6 +18,8 @@ class Cell {
       ...this.#getColCoords(),
       ...this.#getSquareCoords(),
     ].filter(([row, col]) => !(row === this.#row && col === this.#col))
+
+    this.isInitial = this.#value !== ''
   }
 
   #getRowCoords() {

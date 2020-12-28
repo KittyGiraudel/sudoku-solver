@@ -1,30 +1,27 @@
 const debug = require('debug')
-const chalk = require('chalk')
 const Cell = require('./Cell')
 const getSize = require('../helpers/getSize')
 const parseInitialValues = require('../helpers/parseInitialValues')
 const range = require('../helpers/range')
-const render = require('../helpers/render')
 const validate = require('../helpers/validate')
-const { COLORS, SYMBOLS } = require('./constants')
+const { SYMBOLS } = require('./constants')
+const CLIRenderer = require('./CLIRenderer')
 
 class Game {
+  #verbose = typeof process.env.DEBUG !== 'undefined'
   #size
   #grid
-  #initialValues
-  #options = {}
+  #renderer
 
   constructor(initialValues, options = {}) {
     const values = parseInitialValues(initialValues)
     const size = getSize(values)
 
-    this.#options.verbose = typeof process.env.DEBUG !== 'undefined'
-    this.#options.colors = 'colors' in options ? Boolean(options.colors) : false
-    this.#initialValues = values
     this.#size = size
     this.#grid = range(size, row =>
-      range(size, col => new Cell(row, col, size, values.get(row + ':' + col)))
+      range(size, col => new Cell(row, col, size, values.get(`${row}:${col}`)))
     )
+    this.#renderer = new CLIRenderer(this.#grid, options.colors)
   }
 
   get(row, col) {
@@ -33,7 +30,7 @@ class Game {
 
   #checkCell(row, col) {
     const size = this.#size
-    const log = this.#options.verbose ? debug(`${row}:${col}`) : () => {}
+    const log = this.#verbose ? debug(`${row}:${col}`) : () => {}
 
     // If the current row index or colum index is out of bound, it means we have
     // reach the bottom right of the grid, and therefore we have fully resolved.
@@ -113,26 +110,12 @@ class Game {
   }
 
   render() {
-    console.log(this.toString())
+    this.#renderer.render(this.#grid)
     return this
   }
 
   toString() {
-    return render(
-      this.#grid,
-      (row, col) => {
-        const value = this.get(row, col).toString() || ' '
-
-        if (!this.#options.colors) return value
-
-        const isInitial = this.#initialValues.has(row + ':' + col)
-        const color = chalk[COLORS[value - 1] || 'white']
-        const render = isInitial ? color.underline : color
-
-        return render(value)
-      },
-      this.#options.colors
-    )
+    return this.#renderer.format(this.#grid)
   }
 }
 

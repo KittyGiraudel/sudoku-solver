@@ -1,12 +1,11 @@
 const debug = require('debug')
 const chalk = require('chalk')
 const Cell = require('./Cell')
-const divide = require('../helpers/divide')
 const getSize = require('../helpers/getSize')
-const getSquareBoundaries = require('../helpers/getSquareBoundaries')
 const parseInitialValues = require('../helpers/parseInitialValues')
 const range = require('../helpers/range')
 const renderLine = require('../helpers/renderLine')
+const validate = require('../helpers/validate')
 const { COLORS, SYMBOLS, BOXES } = require('./constants')
 
 class Game {
@@ -43,33 +42,6 @@ class Game {
 
   dim(value) {
     return this.options.color ? chalk.dim(value) : value
-  }
-
-  render() {
-    console.log(this.toString())
-    return this
-  }
-
-  toString() {
-    const dim = this.dim.bind(this)
-    const squareSize = Math.sqrt(this.size)
-    const thicks = this.grid[0].map(_ => this.dim(`━━━`))
-    const thins = this.grid[0].map(_ => this.dim(`───`))
-    const top = renderLine(thicks, BOXES.TOP.map(dim))
-    const bottom = renderLine(thicks, BOXES.BOTTOM.map(dim))
-    const thickLine = renderLine(thicks, BOXES.THICK_SEPARATOR.map(dim))
-    const thinLine = renderLine(thins, BOXES.SEPARATOR.map(dim))
-
-    const renderRow = (row, i) => {
-      const cells = row.map((_, col) => ` ${this.renderValue(i, col)} `)
-      const padding = i > 0 ? (i % squareSize ? thinLine : thickLine) : ''
-
-      return [padding, renderLine(cells, BOXES.MIDDLE.map(dim))]
-        .filter(Boolean)
-        .join('\n')
-    }
-
-    return [top, ...this.grid.map(renderRow), bottom].join('\n')
   }
 
   get(row, col) {
@@ -153,45 +125,35 @@ class Game {
   }
 
   validate() {
-    const squareBoundaries = getSquareBoundaries(this.size)
-    const read = coords => this.get(...coords).valueOf()
-
-    for (let i = 0; i < this.size; i++) {
-      const row = range(this.size, col => [i, col])
-        .map(read)
-        .filter(Boolean)
-
-      if (new Set(row).size !== row.length)
-        throw new Error(`Row #${i + 1} has an error.`)
-
-      const col = range(this.size, row => [row, i])
-        .map(read)
-        .filter(Boolean)
-
-      if (new Set(col).size !== col.length)
-        throw new Error(`Column #${i + 1} has an error.`)
-    }
-
-    for (let i = 0; i < squareBoundaries.length; i++) {
-      for (let j = 0; j < squareBoundaries.length; j++) {
-        const square = squareBoundaries[i]
-          .reduce(
-            (acc, row) =>
-              squareBoundaries[j].reduce(
-                (acc, col) => acc.concat([[row, col]]),
-                acc
-              ),
-            []
-          )
-          .map(read)
-          .filter(Boolean)
-
-        if (new Set(square).size !== square.length)
-          throw new Error(`Square #${i + 1}/${j + 1} has an error.`)
-      }
-    }
-
+    validate(this.grid)
     return this
+  }
+
+  render() {
+    console.log(this.toString())
+    return this
+  }
+
+  toString() {
+    const dim = this.dim.bind(this)
+    const squareSize = Math.sqrt(this.size)
+    const thicks = this.grid[0].map(_ => this.dim(`━━━`))
+    const thins = this.grid[0].map(_ => this.dim(`───`))
+    const top = renderLine(thicks, BOXES.TOP.map(dim))
+    const bottom = renderLine(thicks, BOXES.BOTTOM.map(dim))
+    const thickLine = renderLine(thicks, BOXES.THICK_SEPARATOR.map(dim))
+    const thinLine = renderLine(thins, BOXES.SEPARATOR.map(dim))
+
+    const renderRow = (row, i) => {
+      const cells = row.map((_, col) => ` ${this.renderValue(i, col)} `)
+      const padding = i > 0 ? (i % squareSize ? thinLine : thickLine) : ''
+
+      return [padding, renderLine(cells, BOXES.MIDDLE.map(dim))]
+        .filter(Boolean)
+        .join('\n')
+    }
+
+    return [top, ...this.grid.map(renderRow), bottom].join('\n')
   }
 }
 

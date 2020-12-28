@@ -30,12 +30,11 @@ class Cell {
   }
 
   getNeighbours() {
-    const serialisedCoords = [this.row, this.col].join(':')
-
-    return this.getRowCoords()
-      .concat(this.getColCoords())
-      .concat(this.getSquareCoords())
-      .filter(coords => coords.join(':') !== serialisedCoords)
+    return [
+      ...this.getRowCoords(),
+      ...this.getColCoords(),
+      ...this.getSquareCoords(),
+    ].filter(([row, col]) => !(row === this.row && col === this.col))
   }
 
   set(value) {

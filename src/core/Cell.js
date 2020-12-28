@@ -48,10 +48,6 @@ class Cell {
   valueOf() {
     return this.value
   }
-
-  toString() {
-    return String(this.value || '')
-  }
 }
 
 module.exports = Cell

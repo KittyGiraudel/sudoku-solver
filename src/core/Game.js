@@ -6,6 +6,7 @@ const getSize = require('../helpers/getSize')
 const getSquareBoundaries = require('../helpers/getSquareBoundaries')
 const parseInitialValues = require('../helpers/parseInitialValues')
 const range = require('../helpers/range')
+const renderLine = require('../helpers/renderLine')
 const { COLORS, SYMBOLS, BOXES } = require('./constants')
 
 class Game {
@@ -31,10 +32,17 @@ class Game {
 
   colorise(row, col) {
     const value = this.get(row, col).valueOf() || ' '
+
     if (!this.options.colors) return value
-    const color = chalk[COLORS[value - 1]]
+
+    const color = chalk[COLORS[value - 1] || 'black']
     const fn = this.initialValues.has(row + ':' + col) ? color.underline : color
+
     return fn(value)
+  }
+
+  dim(value) {
+    return this.options.color ? chalk.dim(value) : value
   }
 
   render() {
@@ -42,29 +50,21 @@ class Game {
     return this
   }
 
-  renderLine = (cells, ...symbols) => {
-    const [thin, thick, left, right] = symbols.map(symbol => chalk.dim(symbol))
-    const chunks = divide(cells, Math.sqrt(cells.length))
-
-    return left + chunks.map(cells => cells.join(thin)).join(thick) + right
-  }
-
   toString() {
+    const dim = this.dim.bind(this)
     const squareSize = Math.sqrt(this.size)
-    const row = this.grid[0]
-    const thicks = row.map(_ => chalk.dim(`━━━`))
-    const thins = row.map(_ => chalk.dim(`───`))
-    const top = this.renderLine(thicks, ...BOXES.TOP)
-    const bottom = this.renderLine(thicks, ...BOXES.BOTTOM)
-    const thinLine = this.renderLine(thins, ...BOXES.SEPARATOR)
-    const thickLine = this.renderLine(thicks, ...BOXES.THICK_SEPARATOR)
+    const thicks = this.grid[0].map(_ => this.dim(`━━━`))
+    const thins = this.grid[0].map(_ => this.dim(`───`))
+    const top = renderLine(thicks, BOXES.TOP.map(dim))
+    const bottom = renderLine(thicks, BOXES.BOTTOM.map(dim))
+    const thickLine = renderLine(thicks, BOXES.THICK_SEPARATOR.map(dim))
+    const thinLine = renderLine(thins, BOXES.SEPARATOR.map(dim))
 
-    const renderRow = (row, rowIndex) => {
-      const cells = row.map((_, col) => ` ${this.colorise(rowIndex, col)} `)
-      const padding =
-        rowIndex > 0 ? (rowIndex % squareSize ? thinLine : thickLine) : ''
+    const renderRow = (row, i) => {
+      const cells = row.map((_, col) => ` ${this.colorise(i, col)} `)
+      const padding = i > 0 ? (i % squareSize ? thinLine : thickLine) : ''
 
-      return [padding, this.renderLine(cells, ...BOXES.MIDDLE)]
+      return [padding, renderLine(cells, BOXES.MIDDLE.map(dim))]
         .filter(Boolean)
         .join('\n')
     }

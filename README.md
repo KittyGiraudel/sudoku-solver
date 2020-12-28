@@ -7,7 +7,7 @@ This repository contains the code of my (very unoptimised) Sudoku solver.
 ```js
 // Initial values can be specified as a string `row:col=value;…` or as a map
 // where the key is `row,col` and the value is expressed as a string or number.
-// E.g.: new Map([ ['0,2', 5], … ])
+// E.g.: new Map([ ['0:2', 5], … ])
 const initialValues = '0:2=5;0:3=3;…;8:4=8'
 const options = { colors: true }
 const game = new Game(initialValues, options)

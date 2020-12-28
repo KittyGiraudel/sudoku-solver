@@ -30,6 +30,8 @@ class Cell {
   }
 
   getNeighbours() {
+    if (this.neighbours) return this.neighbours
+
     return [
       ...this.getRowCoords(),
       ...this.getColCoords(),
@@ -42,10 +44,10 @@ class Cell {
   }
 
   unset() {
-    this.value = undefined
+    this.value = ''
   }
 
-  valueOf() {
+  toString() {
     return this.value
   }
 }

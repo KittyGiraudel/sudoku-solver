@@ -30,11 +30,11 @@ class Game {
   }
 
   renderValue(row, col) {
-    const value = this.get(row, col).valueOf() || ' '
+    const value = this.get(row, col).toString() || ' '
 
     if (!this.options.colors) return value
 
-    const color = chalk[COLORS[value - 1] || 'black']
+    const color = chalk[COLORS[value - 1] || 'white']
     const fn = this.initialValues.has(row + ':' + col) ? color.underline : color
 
     return fn(value)
@@ -60,7 +60,7 @@ class Game {
     const nextCol = (col + 1) % this.size
     const nextRow = Math.floor((this.size * row + col + 1) / this.size)
     const cell = this.get(row, col)
-    const value = cell.valueOf()
+    const value = cell.toString()
 
     // If there is already a value in the current cell, we can move on to the
     // next one as it means it was a predefined value which cannot be incorrect.
@@ -74,7 +74,7 @@ class Game {
     const impossibleValues = new Set(
       cell
         .getNeighbours()
-        .map(coords => this.get(...coords).valueOf())
+        .map(coords => this.get(...coords).toString())
         .filter(Boolean)
     )
 

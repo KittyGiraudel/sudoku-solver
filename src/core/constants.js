@@ -5,7 +5,7 @@ const BOXES = {
   THICK_SEPARATOR: ['┿', '╋', '┣', '┫'],
   MIDDLE: ['│', '┃', '┃', '┃'],
 }
-const SYMBOLS = '123456789ABCDEFG'.split('')
+const SYMBOLS = '123456789ABCDEFGHIJKLMNOP'.split('')
 const COLORS = [
   'greenBright',
   'red',

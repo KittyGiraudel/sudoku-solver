@@ -1,7 +1,14 @@
 const chalk = require('chalk')
 const divide = require('../helpers/divide')
-const { BOXES, COLORS } = require('./constants')
-const { TOP, BOTTOM, THICK_SEPARATOR, SEPARATOR, MIDDLE } = BOXES
+
+const TOP = ['┯', '┳', '┏', '┓']
+const BOTTOM = ['┷', '┻', '┗', '┛']
+const SEPARATOR = ['┼', '╂', '┠', '┨']
+const THICK_SEPARATOR = ['┿', '╋', '┣', '┫']
+const MIDDLE = ['│', '┃', '┃', '┃']
+const COLORS = 'greenBright,red,green,yellow,blue,magenta,cyan,white,grey'.split(
+  ','
+)
 
 class CLIRenderer {
   #grid

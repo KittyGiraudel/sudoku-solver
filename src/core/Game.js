@@ -4,9 +4,9 @@ const getSize = require('../helpers/getSize')
 const parseInitialValues = require('../helpers/parseInitialValues')
 const range = require('../helpers/range')
 const validate = require('../helpers/validate')
-const { SYMBOLS } = require('./constants')
 const CLIRenderer = require('./CLIRenderer')
 
+const SYMBOLS = '123456789ABCDEFGHIJKLMNOP'.split('')
 const noop = () => {}
 class Game {
   // The verbose mode is enabled if the `DEBUG` environment variable is provided

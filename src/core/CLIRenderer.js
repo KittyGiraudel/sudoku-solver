@@ -6,20 +6,23 @@ const { TOP, BOTTOM, THICK_SEPARATOR, SEPARATOR, MIDDLE } = BOXES
 class CLIRenderer {
   #grid
   #enableColors
+  #initialValues
 
-  constructor(grid, colors) {
-    this.#enableColors = Boolean(colors) || false
+  constructor(grid, values, colors) {
+    this.#enableColors = Boolean(colors)
     this.#grid = grid
+    this.#initialValues = values
   }
 
   renderCell(row, col) {
     const cell = this.#grid[row][col]
-    const value = cell.toString() || ' '
+    const value = cell || ' '
 
     if (!this.#enableColors) return value
 
+    const isInitial = this.#initialValues.has(row + ':' + col)
     const color = chalk[COLORS[value - 1] || 'white']
-    const render = cell.isInitial ? color.underline : color
+    const render = isInitial ? color.underline : color
 
     return render(value)
   }
@@ -34,7 +37,7 @@ class CLIRenderer {
     )
   }
 
-  format(grid) {
+  #format(grid) {
     const dim = value => (this.#enableColors ? chalk.dim(value) : value)
     const squareSize = Math.sqrt(grid.length)
     const thicks = grid[0].map(_ => dim(`━━━`))
@@ -57,7 +60,7 @@ class CLIRenderer {
   }
 
   render(grid) {
-    console.log(this.format(grid))
+    console.log(this.#format(grid))
   }
 }
 

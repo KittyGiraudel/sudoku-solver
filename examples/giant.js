@@ -1,6 +1,6 @@
 const Game = require('../src/core/Game')
 
-new Game(
+const game = new Game(
   new Map([
     ['0:1', 'E'],
     ['0:3', 'G'],
@@ -126,6 +126,7 @@ new Game(
   ]),
   { colors: false }
 )
-  .solve()
-  .render()
-  .validate()
+
+game.solve()
+game.render()
+game.validate()

@@ -12,7 +12,9 @@ const initialValues = '0:2=5;0:3=3;…;8:4=8'
 const options = { colors: true }
 const game = new Game(initialValues, options)
 
-game.solve().render().validate()
+game.solve()
+game.render()
+game.validate()
 ```
 
 ## Example

@@ -49,11 +49,12 @@ class Game {
 
   solve(row = 0, col = 0) {
     const size = this.#size
-    const log = this.#verbose ? debug(`${row}:${col}`) : noop
 
     // If the current row index or colum index is out of bound, it means we have
     // reach the bottom right of the grid, and therefore we have fully resolved.
     if (row >= size || col >= size) return true
+
+    const log = this.#verbose ? debug(`${row}:${col}`) : noop
 
     log('starting')
 
@@ -92,7 +93,7 @@ class Game {
       if (impossibleValues.has(symbol)) continue
 
       // Set the trial value in the cell.
-      this.#grid[row][col] = String(symbol)
+      this.#grid[row][col] = symbol
       log(`trying ${symbol}`)
 
       // Proceed to the next cell. If it eventually returns `true`, that means

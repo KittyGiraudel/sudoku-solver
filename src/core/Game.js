@@ -1,13 +1,12 @@
 const debug = require('debug')
 const getRelevantCells = require('../helpers/getRelevantCells')
-const getSize = require('../helpers/getSize')
-const parseInitialValues = require('../helpers/parseInitialValues')
-const range = require('../helpers/range')
+const parseGrid = require('../helpers/parseGrid')
 const validate = require('../helpers/validate')
 const CLIRenderer = require('./CLIRenderer')
 
-const SYMBOLS = '123456789ABCDEFGHIJKLMNOP'.split('')
+const SYMBOLS = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0'.split('')
 const noop = () => {}
+
 class Game {
   // The verbose mode is enabled if the `DEBUG` environment variable is provided
   // and uses the `debug` package to scope output by coordinates.
@@ -16,6 +15,9 @@ class Game {
   // The grid is bi-dimensional array, initialised in the constructor, used to
   // store the value of all cells.
   #grid
+
+  // The size is computed from the initial grid and cached for speed.
+  #size
 
   // The renderer can be provided as an option to the constructor, otherwise
   // defaults to a CLI renderer.
@@ -26,31 +28,27 @@ class Game {
   // only once.
   #cache = new Map()
 
-  constructor(initialValues, options = {}) {
-    const values = parseInitialValues(initialValues)
-    const size = getSize(values)
-
-    this.#grid = range(size, row =>
-      range(size, col => String(values.get(`${row}:${col}`) || ''))
-    )
+  constructor(grid, options = {}) {
+    this.#grid = parseGrid(grid)
+    this.#size = this.#grid.length
     this.#renderer =
-      options.renderer || new CLIRenderer(this.#grid, values, options.colors)
+      options.renderer || new CLIRenderer(this.#grid, options.colors)
   }
 
-  getRelevantCells(row, col) {
+  getImpossibleValues(row, col) {
     const key = row + ':' + col
+    const cache = this.#cache.get(key)
+    const cells = cache || getRelevantCells(row, col, this.#size)
 
-    if (this.#cache.has(key)) return this.#cache.get(key)
+    if (!cache) this.#cache.set(key, cells)
 
-    const relevantCells = getRelevantCells(row, col, this.#grid.length)
-
-    this.#cache.set(key, relevantCells)
-
-    return relevantCells
+    return new Set(
+      cells.map(([row, col]) => this.#grid[row][col]).filter(Boolean)
+    )
   }
 
   solve(row = 0, col = 0) {
-    const size = this.#grid.length
+    const size = this.#size
     const log = this.#verbose ? debug(`${row}:${col}`) : noop
 
     // If the current row index or colum index is out of bound, it means we have
@@ -72,11 +70,7 @@ class Game {
 
     // Retrieve all the values in the row, column and square of the current cell
     // to know which ones *cannot* be set in the current cell.
-    const impossibleValues = new Set(
-      this.getRelevantCells(row, col)
-        .map(([row, col]) => this.#grid[row][col])
-        .filter(Boolean)
-    )
+    const impossibleValues = this.getImpossibleValues(row, col)
 
     // If there are as many impossible values as items in a row, that means the
     // current cell *cannot* be filled, and therefore there was something

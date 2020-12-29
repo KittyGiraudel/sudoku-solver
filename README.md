@@ -5,12 +5,11 @@ This repository contains the code of my (very unoptimised) Sudoku solver.
 ## Usage
 
 ```js
-// Initial values can be specified as a string `row:col=value;…` or as a map
-// where the key is `row,col` and the value is expressed as a string or number.
-// E.g.: new Map([ ['0:2', 5], … ])
-const initialValues = '0:2=5;0:3=3;…;8:4=8'
-const options = { colors: true }
-const game = new Game(initialValues, options)
+// The grid is provided as a single string where blanks are replaced with 0.
+const game = new Game(
+  '00000001040000000002000000000005040700800030000109000030040020005010000000080600',
+  { colors: true }
+)
 
 game.solve()
 game.render()

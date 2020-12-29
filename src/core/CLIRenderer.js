@@ -15,10 +15,17 @@ class CLIRenderer {
   #enableColors
   #initialValues
 
-  constructor(grid, values, colors) {
+  constructor(grid, colors) {
     this.#enableColors = Boolean(colors)
     this.#grid = grid
-    this.#initialValues = values
+    this.#initialValues = grid.reduce(
+      (acc, row, ri) =>
+        row.reduce(
+          (acc, value, ci) => (value ? acc.add(ri + ':' + ci) : acc),
+          acc
+        ),
+      new Set()
+    )
   }
 
   renderCell(row, col) {

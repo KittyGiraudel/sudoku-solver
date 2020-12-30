@@ -2,9 +2,9 @@ const range = require('./range')
 const getSquareBoundaries = require('./getSquareBoundaries')
 
 const validate = grid => {
-  const size = Math.sqrt(grid.size)
+  const size = grid.length
   const squareBoundaries = getSquareBoundaries(size)
-  const read = coords => grid.get(coords[0] + ':' + coords[1])
+  const read = coords => grid[coords[0]][coords[1]]
 
   for (let i = 0; i < size; i++) {
     const row = range(size, col => [i, col])
